@@ -1,10 +1,18 @@
 {
   "Author": "Sero",
-  "Name": "GearsetSort",
-  "Punchline": "A short one-liner that shows up in /xlplugins.",
+  "Name": "Gearset Sort",
+  "Punchline": "Better Gearset Sorting",
   "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
   "ApplicableVersion": "any",
   "Tags": [
     "GearsetSort"
-  ]
+  ],
+  "InternalName": "GearsetSort",
+  "RepoUrl": "https://github.com/Ryan-RH/GearsetSort",
+  "DownloadCount": 0,
+  "DownloadLinkInstall": "https://puni.sh/api/plugins/download/64/ExplorersIcebox/versions/1.0.4.6/install/latest.zip",
+  "DownloadLinkUpdate": "https://puni.sh/api/plugins/download/64/ExplorersIcebox/versions/1.0.4.6/update/latest.zip",
+  "AssemblyVersion": "0.0.0.1",
+  "DalamudApiLevel": "14",
+  "Changelog": "Initial Version"
 }
