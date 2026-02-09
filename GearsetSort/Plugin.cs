@@ -78,7 +78,7 @@ public sealed class Plugin : IDalamudPlugin
             // Skip invalid / empty gearsets if needed
             if (entry.Id == 255 || entry.NameString == "")
                 break;
-            if (gearsetModule->IsValidGearset(entry.Id))
+            if (!gearsetModule->IsValidGearset(entry.Id))
                 break;
             var gearset = new MainWindow.Gearset
             {
