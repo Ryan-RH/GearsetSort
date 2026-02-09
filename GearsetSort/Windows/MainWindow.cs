@@ -66,7 +66,7 @@ public unsafe class MainWindow : Window
                 ImGui.TableNextColumn();
                 DragDrop.DrawButtonDummy(entry, gearsets, index);
                 ImGui.TableNextColumn();
-                ImGui.Text(entry.Id.ToString());
+                ImGui.Text((entry.Id + 1).ToString());
                 ImGui.TableNextColumn();
                 ImGui.Text(entry.Name);
                 ImGui.PopID();
