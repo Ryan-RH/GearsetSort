@@ -3,7 +3,7 @@
       "Author": "Treezy",
       "Name": "Gearset Sort",
       "Punchline": "Better Gearset Sorting",
-      "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
+      "Description": "Allow draggable sorter instead of having to do some strange swapping that FFXIV only allows",
       "ApplicableVersion": "any",
       "Tags": [
         "GearsetSort"
