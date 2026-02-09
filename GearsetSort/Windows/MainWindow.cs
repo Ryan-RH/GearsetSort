@@ -1,102 +1,107 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
-using Lumina.Excel.Sheets;
+using Dalamud.Plugin.Ipc.Exceptions;
+using Dalamud.Plugin.SelfTest;
+using ECommons.Configuration;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+
 
 namespace GearsetSort.Windows;
 
-public class MainWindow : Window, IDisposable
+public unsafe class MainWindow : Window
 {
-    private readonly string goatImagePath;
-    private readonly Plugin plugin;
-
-    // We give this window a hidden ID using ##.
-    // The user will see "My Amazing Window" as window title,
-    // but for ImGui the ID is "My Amazing Window##With a hidden ID"
-    public MainWindow(Plugin plugin, string goatImagePath)
-        : base("My Amazing Window##With a hidden ID", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+    public class Gearset
     {
-        SizeConstraints = new WindowSizeConstraints
-        {
-            MinimumSize = new Vector2(375, 330),
-            MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
-        };
-
-        this.goatImagePath = goatImagePath;
-        this.plugin = plugin;
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 
-    public void Dispose() { }
+    public static List<Gearset> gearsets = new();
 
-    public override void Draw()
+    public MainWindow() : base($"GearsetSort {P.GetType().Assembly.GetName().Version} ###GearsetSortMainWindow")
     {
-        ImGui.Text($"The random config bool is {plugin.Configuration.SomePropertyToBeSavedAndWithADefault}");
+        Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize;
 
-        if (ImGui.Button("Show Settings"))
+        SizeConstraints = new()
         {
-            plugin.ToggleConfigUi();
-        }
+          MaximumSize = new Vector2(300,700)  
+        };
 
-        ImGui.Spacing();
+        P.windowSystem.AddWindow(this);
+        AllowPinning = false;
+    }
 
-        // Normally a BeginChild() would have to be followed by an unconditional EndChild(),
-        // ImRaii takes care of this after the scope ends.
-        // This works for all ImGui functions that require specific handling, examples are BeginTable() or Indent().
-        using (var child = ImRaii.Child("SomeChildWithAScrollbar", Vector2.Zero, true))
+    public void Dispose()
+    {
+        P.windowSystem.RemoveWindow(this);
+    }
+
+    private static ImGuiEx.RealtimeDragDrop<Gearset> DragDrop = new("GearsetOrder", x => x.Id.ToString());
+
+    public unsafe override void Draw()
+    {
+        DragDrop.Begin();
+        if (ImGui.BeginTable("GearsetReorder", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit))
         {
-            // Check if this child is drawing
-            if (child.Success)
+            ImGui.TableSetupColumn("##ctrl");
+            ImGui.TableSetupColumn("Order");
+            ImGui.TableSetupColumn("Gearset Name");
+            ImGui.TableHeadersRow();
+            for (var index = 0; index < gearsets.Count; index++)
             {
-                ImGui.Text("Have a goat:");
-                var goatImage = Plugin.TextureProvider.GetFromFile(goatImagePath).GetWrapOrDefault();
-                if (goatImage != null)
+                var entry = gearsets[index];
+                ImGui.PushID(entry.Id);
+                if (entry.Id == 255)
+                    break;
+                ImGui.TableNextRow();
+                DragDrop.NextRow();
+                DragDrop.SetRowColor(entry.Id.ToString());
+                ImGui.TableNextColumn();
+                DragDrop.DrawButtonDummy(entry, gearsets, index);
+                ImGui.TableNextColumn();
+                ImGui.Text(entry.Id.ToString());
+                ImGui.TableNextColumn();
+                ImGui.Text(entry.Name);
+                ImGui.PopID();
+            }
+            ImGui.EndTable();
+        }
+        DragDrop.End();
+
+        var width = ImGui.GetContentRegionAvail().X;
+        if (ImGui.Button("Apply", new Vector2(width,30)))
+        {
+            Svc.Log.Info("Applying");
+            var instance = RaptureGearsetModule.Instance();
+            int[] targetIndexes = new int[gearsets.Count];
+            for (int index = 0; index < gearsets.Count; index++)
+            {
+                targetIndexes[gearsets[index].Id] = index;
+            }
+
+            for (int i = 0; i < gearsets.Count; i++)
+            {
+                for (int j = 0; j < targetIndexes.Length; j++)
                 {
-                    using (ImRaii.PushIndent(55f))
+                    if (targetIndexes[j] == i)
                     {
-                        ImGui.Image(goatImage.Handle, goatImage.Size);
+                        if (j != i)
+                        {
+                            instance->ReassignGearsetId(j, i);
+                            (targetIndexes[j], targetIndexes[i]) = (targetIndexes[i], targetIndexes[j]);
+                        }
+                        break;
                     }
                 }
-                else
-                {
-                    ImGui.Text("Image not found.");
-                }
-
-                ImGuiHelpers.ScaledDummy(20.0f);
-
-                // Example for other services that Dalamud provides.
-                // PlayerState provides a wrapper filled with information about the player character.
-
-                var playerState = Plugin.PlayerState;
-                if (!playerState.IsLoaded)
-                {
-                    ImGui.Text("Our local player is currently not logged in.");
-                    return;
-                }
-                
-                if (!playerState.ClassJob.IsValid)
-                {
-                    ImGui.Text("Our current job is currently not valid.");
-                    return;
-                }
-
-                // If you want to see the Macro representation of this SeString use `.ToMacroString()`
-                // More info about SeStrings: https://dalamud.dev/plugin-development/sestring/
-                ImGui.Text($"Our current job is ({playerState.ClassJob.RowId}) '{playerState.ClassJob.Value.Abbreviation}' with level {playerState.Level}");
-
-                // Example for querying Lumina, getting the name of our current area.
-                var territoryId = Plugin.ClientState.TerritoryType;
-                if (Plugin.DataManager.GetExcelSheet<TerritoryType>().TryGetRow(territoryId, out var territoryRow))
-                {
-                    ImGui.Text($"We are currently in ({territoryId}) '{territoryRow.PlaceName.Value.Name}'");
-                }
-                else
-                {
-                    ImGui.Text("Invalid territory.");
-                }
             }
+            FetchGearsets();
         }
     }
 }

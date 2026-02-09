@@ -1,86 +1,92 @@
 ﻿using Dalamud.Game.Command;
+using ECommons.Configuration;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using GearsetSort.Windows;
+using ECommons;
+using ECommons.DalamudServices;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 
 namespace GearsetSort;
 
 public sealed class Plugin : IDalamudPlugin
 {
-    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
-    [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
-    [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
-    [PluginService] internal static IClientState ClientState { get; private set; } = null!;
-    [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
-    [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
-    [PluginService] internal static IPluginLog Log { get; private set; } = null!;
+    public string Name => "GearsetSort";
+    internal static Plugin P = null!;
+    public static Config C => P.config;
+    public Config config;
 
-    private const string CommandName = "/pmycommand";
 
-    public Configuration Configuration { get; init; }
+    // Windows
+    internal WindowSystem windowSystem;
+    internal MainWindow mainWindow;
 
-    public readonly WindowSystem WindowSystem = new("GearsetSort");
-    private ConfigWindow ConfigWindow { get; init; }
-    private MainWindow MainWindow { get; init; }
-
-    public Plugin()
+    public Plugin(IDalamudPluginInterface pi)
     {
-        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        P = this;
+        ECommonsMain.Init(pi, P, ECommons.Module.DalamudReflector, ECommons.Module.ObjectFunctions);
+        new ECommons.Schedulers.TickScheduler(Load);
+    }
 
-        // You might normally want to embed resources and load them from the manifest stream
-        var goatImagePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
+    public void Load()
+    {
+        EzConfig.Migrate<Config>();
+        config = EzConfig.Init<Config>();
 
-        ConfigWindow = new ConfigWindow(this);
-        MainWindow = new MainWindow(this, goatImagePath);
 
-        WindowSystem.AddWindow(ConfigWindow);
-        WindowSystem.AddWindow(MainWindow);
+        windowSystem = new();
+        mainWindow = new();
 
-        CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+        Svc.PluginInterface.UiBuilder.Draw += windowSystem.Draw;
+        Svc.PluginInterface.UiBuilder.OpenMainUi += () =>
         {
-            HelpMessage = "A useful message to display in /xlhelp"
-        });
+            mainWindow.IsOpen = true;
+            FetchGearsets();
+        };
 
-        // Tell the UI system that we want our windows to be drawn through the window system
-        PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
-
-        // This adds a button to the plugin installer entry of this plugin which allows
-        // toggling the display status of the configuration ui
-        PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
-
-        // Adds another button doing the same but for the main ui of the plugin
-        PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
-
-        // Add a simple message to the log with level set to information
-        // Use /xllog to open the log window in-game
-        // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
-        Log.Information($"===A cool log message from {PluginInterface.Manifest.Name}===");
+        EzCmd.Add("/gearsort", OnCommand);
     }
 
     public void Dispose()
     {
-        // Unregister all actions to not leak anything during disposal of plugin
-        PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
-        PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
-        PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
-        
-        WindowSystem.RemoveAllWindows();
-
-        ConfigWindow.Dispose();
-        MainWindow.Dispose();
-
-        CommandManager.RemoveHandler(CommandName);
+        Svc.PluginInterface.UiBuilder.Draw -= windowSystem.Draw;
+        ECommonsMain.Dispose();
     }
 
     private void OnCommand(string command, string args)
     {
-        // In response to the slash command, toggle the display status of our main ui
-        MainWindow.Toggle();
+        if (args == "")
+        {
+            mainWindow.IsOpen = !mainWindow.IsOpen;
+            FetchGearsets();
+            return;
+        }
     }
-    
-    public void ToggleConfigUi() => ConfigWindow.Toggle();
-    public void ToggleMainUi() => MainWindow.Toggle();
+
+    public static unsafe void FetchGearsets()
+    {
+        var gearsetModule = RaptureGearsetModule.Instance();
+        var entries = gearsetModule->Entries;
+
+        MainWindow.gearsets.Clear();
+
+        foreach (var entry in entries)
+        {
+            // Skip invalid / empty gearsets if needed
+            if (entry.Id == 255)
+                break;
+
+            var gearset = new MainWindow.Gearset
+            {
+                Id = entry.Id,
+                Name = entry.NameString // depends on type
+            };
+
+            MainWindow.gearsets.Add(gearset);
+        }
+    }
+
 }

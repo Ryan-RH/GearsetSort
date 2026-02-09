@@ -1,19 +1,17 @@
-﻿using Dalamud.Configuration;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using ECommons.Configuration;
 using System;
 
 namespace GearsetSort;
 
 [Serializable]
-public class Configuration : IPluginConfiguration
+public class Config : IEzConfig
 {
-    public int Version { get; set; } = 0;
+    public bool InsertMode = false;
 
-    public bool IsConfigWindowMovable { get; set; } = true;
-    public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
-
-    // The below exists just to make saving less cumbersome
     public void Save()
     {
-        Plugin.PluginInterface.SavePluginConfig(this);
+        EzConfig.Save();
     }
 }
