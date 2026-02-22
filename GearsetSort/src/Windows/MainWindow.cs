@@ -10,7 +10,8 @@ public class MainWindow : Window
 
         SizeConstraints = new()
         {
-          MaximumSize = new Vector2(300,700)  
+            MinimumSize = new Vector2(175,200),
+            MaximumSize = new Vector2(300,700)  
         };
 
         P.windowSystem.AddWindow(this);
@@ -42,7 +43,7 @@ public class MainWindow : Window
 
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
-                ImGui.Selectable($"{uniqueId}", false, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowItemOverlap);
+                ImGui.Selectable($"{entry.id + 1}", false, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowItemOverlap);
 
                 if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.SourceNoPreviewTooltip))
                 {
