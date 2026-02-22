@@ -10,6 +10,6 @@ public class Config : IPluginConfiguration
 
     public void Save()
     {
-        Svc.PluginInterface.SavePluginConfig(this);
+        PluginInterface.SavePluginConfig(this);
     }
 }

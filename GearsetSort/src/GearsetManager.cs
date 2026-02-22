@@ -20,6 +20,7 @@ public class GearsetManager
         ResortGearsets();
         RefreshAddon();
         FetchGearsets();
+        
     }
 
     public static unsafe void FetchGearsets()
@@ -44,7 +45,8 @@ public class GearsetManager
 
     public static unsafe void ResortGearsets()
     {
-        Svc.Log.Info("Applying");
+        Log.Info("Applying");
+        ToastHandler.handled = true;
         var gearsetModule = RaptureGearsetModule.Instance();
         var hotbarModule = RaptureHotbarModule.Instance();
         int[] targetIndexes = new int[gearsets.Count];
@@ -65,7 +67,6 @@ public class GearsetManager
                         gearsetModule->ReassignGearsetId(j, i);
                         hotbarModule->ReassignGearsetId(j, i);
                         (targetIndexes[j], targetIndexes[i]) = (targetIndexes[i], targetIndexes[j]);
-                    
                     }
                     break;
                 }
@@ -75,7 +76,7 @@ public class GearsetManager
 
     private static unsafe void RefreshAddon()
     {
-        var addon = Svc.GameGui.GetAddonByName("GearSetList");
+        var addon = GameGui.GetAddonByName("GearSetList");
         if (addon != null)
         {
             var addonBase = (AtkUnitBase*)addon.Address;
