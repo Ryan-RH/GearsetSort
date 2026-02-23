@@ -5,14 +5,13 @@
   "Description": "Enable draggable sorter instead of having to do some strange swapping that FFXIV only allows",
   "ApplicableVersion": "any",
   "Tags": [
-    "GearsetSort"
+    "GearsetSort",
+    "Gearset"
   ],
   "InternalName": "GearsetSort",
   "RepoUrl": "https://github.com/Ryan-RH/GearsetSort",
   "DownloadCount": 0,
-  "DownloadLinkInstall": "https://github.com/Ryan-RH/GearsetSort/releases/download/v0.0.0.2/latest.zip",
-  "DownloadLinkUpdate": "https://github.com/Ryan-RH/GearsetSort/releases/download/v0.0.0.2/latest.zip",
-  "AssemblyVersion": "0.0.2.0",
+  "AssemblyVersion": "0.0.3.0",
   "DalamudApiLevel": "14",
-  "Changelog": "Initial Version"
+  "Changelog": "UI Changes"
 }
