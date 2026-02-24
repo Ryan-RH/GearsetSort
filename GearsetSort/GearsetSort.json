@@ -13,5 +13,6 @@
   "DownloadCount": 0,
   "AssemblyVersion": "0.0.3.0",
   "DalamudApiLevel": "14",
-  "Changelog": "UI Changes"
+  "Changelog": "UI Changes",
+  "IconUrl": "https://raw.githubusercontent.com/Ryan-RH/GearsetSort/master/images/icon.png"
 }
