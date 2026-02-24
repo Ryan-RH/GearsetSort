@@ -46,9 +46,9 @@ public class GearsetManager
         {
             // Skip invalid / empty gearsets if needed
             if (entry.Id == 255 || entry.NameString == "")
-                break;
+                continue;
             if (!gearsetModule->IsValidGearset(entry.Id))
-                break;
+                continue;
             List<GearItem> items = new List<GearItem>();
             foreach (var item in entry.Items)
             {
@@ -120,4 +120,18 @@ public class GearsetManager
             atkUnitManager->RefreshAddon(addonBase, addonBase->AtkValuesCount, addonBase->AtkValues);
         }
     }
+
+    public static unsafe void EquipGearset(int index)
+    {
+        var gearsetModule = RaptureGearsetModule.Instance();
+        gearsetModule->EquipGearset(index);
+    }
+
+    public static unsafe void ChangeGearset(int index)
+    {
+        var gearsetModule = RaptureGearsetModule.Instance();
+        gearsetModule->UpdateGearset(index);
+        FetchGearsets();
+    }
+
 }

@@ -34,7 +34,7 @@ public class MainWindow : Window
     {
         // Learnt a lot of the process from ECommons' DragDrop class. ImGui's dragdrop is not good
         
-        ImGui.BeginChild("ScrollableTable", new Vector2(190, 20 * ImGui.GetTextLineHeightWithSpacing()), true, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NavFlattened);
+        ImGui.BeginChild("ScrollableTable", new Vector2(190, 20 * ImGui.GetTextLineHeightWithSpacing()), true, ImGuiWindowFlags.AlwaysAutoResize);
         if (ImGui.BeginTable("GearsetReorder", 3, ImGuiTableFlags.NoBordersInBody | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.PadOuterX))
         {
             ImGui.TableSetupColumn("##Order");
@@ -45,13 +45,17 @@ public class MainWindow : Window
             {
                 var entry = GearsetManager.gearsets[index];
                 var uniqueId = entry.id.ToString();
-                if (entry.id == 255) break;
+                if (entry.id == 255) continue;
 
 
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
                 if (ImGui.Selectable($"{entry.id + 1}", false, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowItemOverlap))
+                {
+                    if (ImGui.IsKeyDown(ImGuiKey.LeftShift))
+                        Log.Debug($"Test");
                     selectedGearset = entry;
+                }
 
                 if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.SourceNoPreviewTooltip))
                 {
@@ -125,7 +129,7 @@ public class MainWindow : Window
             var cursorPos = ImGui.GetCursorPos();
             var textSize = ImGui.CalcTextSize(selectedGearset.name);
             ImGui.SetCursorPosX(cursorPos.X + childWindowSize.X / 2 - textSize.X / 2);
-            ImGui.Text(selectedGearset.name);
+            ImGui.TextColored(new Vector4(0.4f, 0.8f, 1f, 1f),selectedGearset.name);
             ImGui.Separator();
             ImGui.Spacing();
             var storedCategoryChange = selectedGearset.items[0].majorCategory;
@@ -145,18 +149,43 @@ public class MainWindow : Window
                     ImGui.SameLine();
                     ImGui.Text(item.name);
                 }
-                else
-                    ImGui.Text("Yes");
             }
+            ImGui.SetCursorPos(new Vector2(cursorPos.X+175, cursorPos.Y + childWindowSize.Y - 25));
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.87f, 0.67f, 0.17f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.67f, 0.47f, 0f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.67f, 0.47f, 0f, 1f));
+            if (!ImGui.IsKeyDown(ImGuiKey.LeftCtrl))
+            {
+                ImGui.BeginDisabled();
+                ImGui.Button("Update", new Vector2(60, 25));
+                ImGui.EndDisabled();
+            }
+            else if (ImGui.Button("Update", new Vector2(60, 25)))
+            {
+                if (selectedGearset != null)
+                    GearsetManager.ChangeGearset(selectedGearset.id);
+            }
+            ImGui.PopStyleColor(3);
+            ImGui.SameLine();
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.6f, 0.2f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0f, 0.45f, 0f, 1f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0f, 0.25f, 0f, 1f));
+            if (ImGui.Button("Equip", new Vector2(60, 25)))
+            {   
+                if (selectedGearset != null)
+                    GearsetManager.EquipGearset(selectedGearset.id);
+            }
+            ImGui.PopStyleColor(3);
         }
         ImGui.EndChild();
         ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.2f, 0.6f, 0.2f, 1f));
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0f, 0.45f, 0f, 1f));
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0f, 0.25f, 0f, 1f));
         if (ImGui.Button("Apply", new Vector2(190,30)))
         {
             GearsetManager.ApplyChange();
         }
-        ImGui.PopStyleColor(2);
+        ImGui.PopStyleColor(3);
 
         ImGui.SameLine();
         var cursorPosMode = ImGui.GetCursorPos();
@@ -166,11 +195,12 @@ public class MainWindow : Window
         ImGui.SameLine();
 
         ImGui.SetCursorPosY(cursorPosMode.Y + 3);
-        ImGui.PushStyleColor(ImGuiCol.Button, P.config.Insert ? new Vector4(0.3f, 0.7f, 0.3f, 1.0f) : new Vector4(0.7f, 0.3f, 0.3f, 1.0f));
-        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, P.config.Insert ? new Vector4(0.1f, 0.5f, 0.1f, 1.0f) : new Vector4(0.5f, 0.1f, 0.1f, 1.0f));
-        ImGui.PushStyleColor(ImGuiCol.ButtonActive, P.config.Insert ? new Vector4(0.1f, 0.5f, 0.1f, 1.0f) : new Vector4(0.5f, 0.1f, 0.1f, 1.0f));
-        if (ImGui.Button(P.config.Insert ? "Insert" : "Swap", new Vector2(70, 25)))
+        ImGui.PushStyleColor(ImGuiCol.Button, P.config.Insert ? new Vector4(0.2f, 0.6f, 0.8f, 1f) : new Vector4(0.5f, 0.1f, 0.1f, 1.0f));
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, P.config.Insert ? new Vector4(0.4f, 0.8f, 1f, 1f) : new Vector4(0.7f, 0.3f, 0.3f, 1.0f));
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, P.config.Insert ? new Vector4(0.4f, 0.8f, 1f, 1f) : new Vector4(0.7f, 0.3f, 0.3f, 1.0f));
+        if (ImGui.Button(P.config.Insert ? "Insert" : "Swap", new Vector2(60, 25)))
             P.config.Insert = !P.config.Insert;
         ImGui.PopStyleColor(3);
     }
 }
+
