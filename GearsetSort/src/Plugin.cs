@@ -1,7 +1,7 @@
 ﻿using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
-using GearsetSort.Windows;
+using GearsetSort.UI;
 
 namespace GearsetSort;
 
@@ -15,13 +15,10 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IDataManager Data { get; private set; } = null!;
     [PluginService] internal static ITextureProvider Texture { get; private set; } = null!;
 
-
-
     internal static Plugin P = null!;
     public Config config { get; init; }
 
 
-    // Windows
     internal WindowSystem windowSystem;
     internal MainWindow mainWindow;
 
@@ -39,7 +36,7 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi += () =>
         {
             mainWindow.IsOpen = true;
-            GearsetManager.FetchGearsets();
+            Core.FetchGearsets();
         };
 
         CommandManager.AddHandler("/gearsort", new CommandInfo(OnCommand));
@@ -59,7 +56,7 @@ public sealed class Plugin : IDalamudPlugin
         if (args == "")
         {
             mainWindow.IsOpen = !mainWindow.IsOpen;
-            GearsetManager.FetchGearsets();
+            Core.FetchGearsets();
         }
     }
 }

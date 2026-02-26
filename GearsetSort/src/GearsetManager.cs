@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Dalamud.Interface.Textures;
 using Dalamud.Utility;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -9,23 +11,42 @@ using Lumina.Excel.Sheets;
 
 namespace GearsetSort;
 
-public class GearsetManager
+public class Core
 {
     public static List<Gearset> gearsets = new();
+
+    public record GearMateria
+    (
+        ISharedImmediateTexture texture,
+        string name
+    );
 
     public record GearItem
     (
         ISharedImmediateTexture texture,
         string name,
-        byte majorCategory
+        byte majorCategory,
+        List<GearMateria> materia
     );
 
+    public record CurrentAndTarget
+    {
+        public int current { get; set; } // Change to `set` instead of `init`
+        public int target { get; }
+
+        public CurrentAndTarget(int current, int target)
+        {
+            this.current = current;
+            this.target = target;
+        }
+    }
     public record Gearset
     (
         int id,
         string name,
-        ISharedImmediateTexture classJob,
-        List<GearItem> items
+        ISharedImmediateTexture classJobIcon,
+        List<GearItem> items,
+        int itemLevel
     );
 
     public static void ApplyChange()
@@ -66,25 +87,64 @@ public class GearsetManager
                         path = $"ui/icon/{itemRow.Icon / 1000 * 1000:000000}/hq/{itemRow.Icon:000000}.tex";
                     }
                     var texture = Texture.GetFromGame(path);
-                    if (texture != null)
+                    if (texture == null)
+                        continue;
+
+                    List<GearMateria> materia = new();
+                    for (int i = 0; i < item.Materia.Length; i++)
                     {
-                        GearItem foundItem = new GearItem(texture, ItemUtil.GetItemName(itemId).ToString(), itemRow.ItemUICategory.Value.OrderMajor);
-                        items.Add(foundItem);
+                        var mat = item.Materia[i];
+                        var matGrade = item.MateriaGrades[i];
+                        var matObj = Data.GetExcelSheet<Materia>().FirstOrDefault(x => x.RowId == mat).Item[matGrade];
+                        if (matObj.RowId == 0)
+                            break;
+                        var matIcon = matObj.Value.Icon;
+                        var matTexture = Texture.GetFromGame($"ui/icon/{matIcon / 1000 * 1000:000000}/{matIcon:000000}.tex");
+                        if (matTexture != null)
+                            materia.Add(new GearMateria(matTexture, matObj.Value.Name.ToString()));
                     }
+
+                    GearItem foundItem = new GearItem(texture, ItemUtil.GetItemName(itemId).ToString(), itemRow.ItemUICategory.Value.OrderMajor, materia);
+                    items.Add(foundItem);
                 }
             }
             var jobTexture = Texture.GetFromGame($"ui/icon/062000/0621{entry.ClassJob:00}.tex");
-            var gearset = new Gearset(entry.Id, entry.NameString, jobTexture, items);
+            var gearset = new Gearset(entry.Id, entry.NameString, jobTexture, items, entry.ItemLevel);
             gearsets.Add(gearset);
         }
     }
 
-    public static unsafe void ResortGearsets()
+    private static unsafe void ResortGearsets()
     {
+        // This is an intensive function and most likely inefficient
+        // Due to the fact it is a button not to be used constantly, I believe its okay to be like this
+        // First it fills empty ids. A user can delete a gearset and cause a gap in ids "23, 24, 26, 27"
+        // After this it then uses the indexes of the gearsets list as the target of the gearset
+        // it then does something i actually forgot, but it works. I lost the text document that explained it
+        // think its literally just a bubble sort, it made sense at the time
+
+
         Log.Info("Applying");
         ToastHandler.handled = true;
         var gearsetModule = RaptureGearsetModule.Instance();
         var hotbarModule = RaptureHotbarModule.Instance();
+
+        var orderedIds = gearsets.OrderBy(x => x.id).Select(x => x.id).ToList();
+
+        var length = orderedIds.Count;
+        for (int i = 0; i < length; i++)
+        {
+            if (orderedIds[i] != i)
+            {
+                gearsetModule->ReassignGearsetId(i, orderedIds[length-1]);
+                hotbarModule->ReassignGearsetId(i, orderedIds[length-1]);
+                var changedIndex = gearsets.FindIndex(x => x.id ==  orderedIds[length-1]);
+                gearsets[changedIndex] = gearsets[changedIndex] with { id = i };
+                orderedIds[length-1] = i;
+                orderedIds.Sort();
+            }
+        }
+
         int[] targetIndexes = new int[gearsets.Count];
         for (int index = 0; index < gearsets.Count; index++)
         {

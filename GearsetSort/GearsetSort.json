@@ -11,8 +11,8 @@
   "InternalName": "GearsetSort",
   "RepoUrl": "https://github.com/Ryan-RH/GearsetSort",
   "DownloadCount": 0,
-  "AssemblyVersion": "0.0.3.1",
+  "AssemblyVersion": "0.0.4.0",
   "DalamudApiLevel": "14",
-  "Changelog": "UI Changes",
+  "Changelog": "More Ui Changes",
   "IconUrl": "https://raw.githubusercontent.com/Ryan-RH/GearsetSort/master/images/icon.png"
 }
