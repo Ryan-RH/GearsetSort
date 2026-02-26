@@ -69,4 +69,8 @@ public static class Colour
     public static readonly Vector4 Yellow  = new(0.9f, 0.7f, 0.2f, 1f);
     public static readonly Vector4 Blue    = new(0.2f, 0.6f, 0.8f, 1f);
     public static readonly Vector4 Red     = new(0.5f, 0.1f, 0.1f, 1f);
+
+    // FFlogs Colours
+
+    
 }

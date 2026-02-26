@@ -3,16 +3,11 @@
   "Name": "Gearset Sort",
   "Punchline": "Better Gearset Sorting",
   "Description": "Enable draggable sorter instead of having to do some strange swapping that FFXIV only allows",
-  "ApplicableVersion": "any",
   "Tags": [
     "GearsetSort",
     "Gearset"
   ],
   "InternalName": "GearsetSort",
   "RepoUrl": "https://github.com/Ryan-RH/GearsetSort",
-  "DownloadCount": 0,
-  "AssemblyVersion": "0.0.4.0",
-  "DalamudApiLevel": "14",
-  "Changelog": "More Ui Changes",
   "IconUrl": "https://raw.githubusercontent.com/Ryan-RH/GearsetSort/master/images/icon.png"
 }

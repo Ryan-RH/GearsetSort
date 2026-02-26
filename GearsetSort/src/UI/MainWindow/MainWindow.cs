@@ -10,11 +10,7 @@ public partial class MainWindow : Window
     {
         Flags = ImGuiWindowFlags.NoResize;
 
-        SizeConstraints = new()
-        {
-            MinimumSize = new Vector2(565,505),
-            MaximumSize = new Vector2(565,505)  
-        };
+        Size = new(565,505);
 
         P.windowSystem.AddWindow(this);
         AllowPinning = false;
@@ -30,6 +26,11 @@ public partial class MainWindow : Window
     public override void OnClose()
     {
         selectedGearset = null;
+    }
+
+    public override void OnOpen()
+    {
+        Core.FetchGearsets();
     }
 
     public override void Draw()

@@ -31,7 +31,7 @@ public class Core
 
     public record CurrentAndTarget
     {
-        public int current { get; set; } // Change to `set` instead of `init`
+        public int current { get; set; }
         public int target { get; }
 
         public CurrentAndTarget(int current, int target)
@@ -65,7 +65,6 @@ public class Core
 
         foreach (var entry in entries)
         {
-            // Skip invalid / empty gearsets if needed
             if (entry.Id == 255 || entry.NameString == "")
                 continue;
             if (!gearsetModule->IsValidGearset(entry.Id))

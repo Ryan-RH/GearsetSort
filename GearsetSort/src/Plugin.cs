@@ -19,25 +19,21 @@ public sealed class Plugin : IDalamudPlugin
     public Config config { get; init; }
 
 
-    internal WindowSystem windowSystem;
-    internal MainWindow mainWindow;
+    public readonly WindowSystem windowSystem = new("GearsetSort");
+    private MainWindow mainWindow;
 
     public Plugin(IDalamudPluginInterface pi)
     {
         P = this;
         config = PluginInterface.GetPluginConfig() as Config ?? new Config();
 
-        windowSystem = new();
         mainWindow = new();
 
         ToastGui.Toast += ToastHandler.HandleGearsetToast;
 
         PluginInterface.UiBuilder.Draw += windowSystem.Draw;
-        PluginInterface.UiBuilder.OpenMainUi += () =>
-        {
-            mainWindow.IsOpen = true;
-            Core.FetchGearsets();
-        };
+        PluginInterface.UiBuilder.OpenConfigUi += () => mainWindow.IsOpen = true;
+        PluginInterface.UiBuilder.OpenMainUi += () => mainWindow.IsOpen = true;
 
         CommandManager.AddHandler("/gearsort", new CommandInfo(OnCommand));
         CommandManager.AddHandler("/gearsetsort", new CommandInfo(OnCommand));
@@ -48,15 +44,16 @@ public sealed class Plugin : IDalamudPlugin
     {
         ToastGui.Toast -= ToastHandler.HandleGearsetToast;
         PluginInterface.UiBuilder.Draw -= windowSystem.Draw;
+        PluginInterface.UiBuilder.OpenConfigUi -= () => mainWindow.IsOpen = true;
+        PluginInterface.UiBuilder.OpenMainUi -= () => mainWindow.IsOpen = true;
+
+        windowSystem.RemoveAllWindows();
         mainWindow.Dispose();
+
+        CommandManager.RemoveHandler("/gearsort");
+        CommandManager.RemoveHandler("/gearsetsort");
     }
 
     private void OnCommand(string command, string args)
-    {
-        if (args == "")
-        {
-            mainWindow.IsOpen = !mainWindow.IsOpen;
-            Core.FetchGearsets();
-        }
-    }
+        => mainWindow.IsOpen = !mainWindow.IsOpen;
 }

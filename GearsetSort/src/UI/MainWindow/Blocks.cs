@@ -120,7 +120,7 @@ public partial class MainWindow : Window
             if (selectedGearset != null)
                 Core.ChangeGearset(selectedGearset.id);
         }
-        Util.HoverToolTip("Hold Ctrl and select to change\nthis gearset with currently equipped.");
+        Util.HoverToolTip("Hold \"Left-Ctrl\" and click the button\nto change this gearset with your currently equipped.");
         
 
         ImGui.SameLine();
