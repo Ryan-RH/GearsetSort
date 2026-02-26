@@ -8,13 +8,9 @@ namespace GearsetSort.UI;
 
 public partial class MainWindow : Window
 {
-    private float blockHeight = ImGuiHelpers.GlobalScale * 27 * ImGui.GetTextLineHeight();
-
     public void ScrollableBlock()
     {
-        using var ScrollableBlock = ImRaii.Child("##ScrollableBlock", 
-            new Vector2(ImGuiHelpers.GlobalScale * 190, blockHeight), 
-            true);
+        using var ScrollableBlock = ImRaii.Child("##ScrollableBlock", Util.Vec2(190, 430), true);
 
         if (!ScrollableBlock) return;
 
@@ -49,9 +45,9 @@ public partial class MainWindow : Window
         DragDropTarget(index);
 
         ImGui.TableNextColumn();
-        var wrap = gearset.classJobIcon.GetWrapOrDefault();
+        var wrap = gearset.classJob.icon.GetWrapOrDefault();
         if (wrap!= null)
-            ImGui.Image(wrap.Handle, new Vector2(20,20));
+            ImGui.Image(wrap.Handle, Util.Vec2(20, 20));
 
         ImGui.TableNextColumn();
         ImGui.Text(gearset.name);
@@ -59,7 +55,7 @@ public partial class MainWindow : Window
 
     public void PreviewBlock()
     {
-        using var PreviewBlock = ImRaii.Child("##GearsetPreview", new Vector2(350 * ImGuiHelpers.GlobalScale, blockHeight), true);
+        using var PreviewBlock = ImRaii.Child("##GearsetPreview", Util.Vec2(350, 430), true);
 
         if (!PreviewBlock) return;
 
@@ -84,6 +80,7 @@ public partial class MainWindow : Window
 
         var cursorPos = ImGui.GetCursorPos();
         var blockSize = ImGui.GetContentRegionAvail();
+        if (selectedGearset.items.Count == 0) return;
         var storedCategoryChange = selectedGearset.items[0].majorCategory;
         foreach (var item in selectedGearset.items)
         {
@@ -101,7 +98,7 @@ public partial class MainWindow : Window
             {
                 if (!TextBlock) continue;
 
-                ImGui.Image(wrap.Handle, new Vector2(20,20));
+                ImGui.Image(wrap.Handle, Util.Vec2(20, 20));
                 ImGui.SameLine();
                 ImGui.Text(item.name);
             }
@@ -132,7 +129,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ToolTip(Core.GearItem item)
+    private void ToolTip(Models.SetItem item)
     {
         using var ToolTip = ImRaii.Tooltip();
                     
@@ -149,7 +146,7 @@ public partial class MainWindow : Window
             var wrapMateria = materia.texture.GetWrapOrEmpty();
             if (wrapMateria == null) return;
 
-            ImGui.Image(wrapMateria.Handle, new Vector2(15, 15));
+            ImGui.Image(wrapMateria.Handle, Util.Vec2(15, 15));
             ImGui.SameLine();
             ImGui.Text(materia.name);
         }

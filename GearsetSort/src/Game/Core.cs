@@ -8,26 +8,13 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
+using GearsetSort.Models;
 
 namespace GearsetSort;
 
-public class Core
+public partial class Core
 {
     public static List<Gearset> gearsets = new();
-
-    public record GearMateria
-    (
-        ISharedImmediateTexture texture,
-        string name
-    );
-
-    public record GearItem
-    (
-        ISharedImmediateTexture texture,
-        string name,
-        byte majorCategory,
-        List<GearMateria> materia
-    );
 
     public record CurrentAndTarget
     {
@@ -40,15 +27,6 @@ public class Core
             this.target = target;
         }
     }
-    public record Gearset
-    (
-        int id,
-        string name,
-        ISharedImmediateTexture classJobIcon,
-        List<GearItem> items,
-        int itemLevel
-    );
-
     public static void ApplyChange()
     {
         ResortGearsets();
@@ -69,46 +47,38 @@ public class Core
                 continue;
             if (!gearsetModule->IsValidGearset(entry.Id))
                 continue;
-            List<GearItem> items = new List<GearItem>();
+            List<SetItem> items = new();
+            var itemSheet = Data.GetExcelSheet<Item>();
+            var materiaSheet = Data.GetExcelSheet<Materia>();
             foreach (var item in entry.Items)
             {
                 var itemId = item.ItemId;
-                var itemRow = Data.GetExcelSheet<Item>().FirstOrDefault(x => x.RowId == itemId % 100000);
-                if (!itemRow.Equals(default(Item)) && itemRow.RowId != 0 && itemRow.EquipSlotCategory.RowId != 17)
+                var itemRow = itemSheet.FirstOrDefault(x => x.RowId == itemId % 100000);
+                if (itemRow.Equals(default(Item)) || itemRow.RowId == 0 || itemRow.EquipSlotCategory.RowId == 17)
+                    continue;
+
+                var texture = GetTextureFromIcon(itemRow.Icon, ItemUtil.IsHighQuality(itemId));
+                if (texture == null)
+                    continue;
+
+                List<SetMateria> materia = new();
+                for (int i = 0; i < item.Materia.Length; i++)
                 {
-                    string? path = null;
-                    if (!ItemUtil.IsHighQuality(itemId))
-                    {
-                        path = $"ui/icon/{itemRow.Icon / 1000 * 1000:000000}/{itemRow.Icon:000000}.tex";
-                    }
-                    else
-                    {
-                        path = $"ui/icon/{itemRow.Icon / 1000 * 1000:000000}/hq/{itemRow.Icon:000000}.tex";
-                    }
-                    var texture = Texture.GetFromGame(path);
-                    if (texture == null)
-                        continue;
+                    var matObj = materiaSheet.FirstOrDefault(x => x.RowId == item.Materia[i]).Item[item.MateriaGrades[i]];
+                    if (matObj.RowId == 0)
+                        break;
 
-                    List<GearMateria> materia = new();
-                    for (int i = 0; i < item.Materia.Length; i++)
-                    {
-                        var mat = item.Materia[i];
-                        var matGrade = item.MateriaGrades[i];
-                        var matObj = Data.GetExcelSheet<Materia>().FirstOrDefault(x => x.RowId == mat).Item[matGrade];
-                        if (matObj.RowId == 0)
-                            break;
-                        var matIcon = matObj.Value.Icon;
-                        var matTexture = Texture.GetFromGame($"ui/icon/{matIcon / 1000 * 1000:000000}/{matIcon:000000}.tex");
-                        if (matTexture != null)
-                            materia.Add(new GearMateria(matTexture, matObj.Value.Name.ToString()));
-                    }
-
-                    GearItem foundItem = new GearItem(texture, ItemUtil.GetItemName(itemId).ToString(), itemRow.ItemUICategory.Value.OrderMajor, materia);
-                    items.Add(foundItem);
+                    var matTexture = GetTextureFromIcon(matObj.Value.Icon);
+                    if (matTexture != null)
+                        materia.Add(new SetMateria(matTexture, matObj.Value.Name.ToString()));
                 }
+
+                SetItem foundItem = new SetItem(texture, ItemUtil.GetItemName(itemId).ToString(), itemRow.ItemUICategory.Value.OrderMajor, materia);
+                items.Add(foundItem);
             }
             var jobTexture = Texture.GetFromGame($"ui/icon/062000/0621{entry.ClassJob:00}.tex");
-            var gearset = new Gearset(entry.Id, entry.NameString, jobTexture, items, entry.ItemLevel);
+            SetClassJob classJob = new(entry.ClassJob, jobTexture);
+            var gearset = new Gearset(entry.Id, entry.NameString, classJob, items, entry.ItemLevel);
             gearsets.Add(gearset);
         }
     }

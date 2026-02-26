@@ -38,17 +38,14 @@ public static class Util
         using var colourButton = ImRaii.PushColor(ImGuiCol.Button, idle)
             .Push(ImGuiCol.ButtonHovered, hover)
             .Push(ImGuiCol.ButtonActive, active);
-
-        var sizeScaled = new Vector2(size.X * ImGuiHelpers.GlobalScale, size.Y * ImGuiHelpers.GlobalScale);
-
         if (disabled)
         {
             using var _ = ImRaii.Disabled(); // don't need to scope cos end if scope returns
-            ImGui.Button(label, sizeScaled);
+            ImGui.Button(label, Vec2(size));
             return false;
         }
 
-        return ImGui.Button(label, sizeScaled);
+        return ImGui.Button(label, Vec2(size));
     }
 
     public static void HoverToolTip(string message)
@@ -61,6 +58,12 @@ public static class Util
 
         ImGui.Text(message);
     }
+
+    public static Vector2 Vec2(float x, float y)
+        => new(x * ImGuiHelpers.GlobalScale, y * ImGuiHelpers.GlobalScale);
+    
+    public static Vector2 Vec2(Vector2 vec2)
+        => new(vec2.X * ImGuiHelpers.GlobalScale, vec2.Y * ImGuiHelpers.GlobalScale);
 }
 
 public static class Colour

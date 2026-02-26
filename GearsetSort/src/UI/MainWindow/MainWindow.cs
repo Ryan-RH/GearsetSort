@@ -21,7 +21,7 @@ public partial class MainWindow : Window
         P.windowSystem.RemoveWindow(this);
     }
 
-    public Core.Gearset? selectedGearset = null;
+    public Models.Gearset? selectedGearset = null;
 
     public override void OnClose()
     {
