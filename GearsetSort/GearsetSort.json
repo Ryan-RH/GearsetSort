@@ -2,10 +2,11 @@
   "Author": "Treezy",
   "Name": "Gearset Sort",
   "Punchline": "Better Gearset Sorting",
-  "Description": "Enable draggable sorter instead of having to do some strange swapping that FFXIV only allows",
+  "Description": "A cleaner interface to sort your gearsets that allows both swap/insert methods.",
   "Tags": [
     "GearsetSort",
-    "Gearset"
+    "Gearset",
+    "Sort"
   ],
   "InternalName": "GearsetSort",
   "RepoUrl": "https://github.com/Ryan-RH/GearsetSort",

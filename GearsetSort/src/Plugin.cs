@@ -35,8 +35,10 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenConfigUi += () => mainWindow.IsOpen = true;
         PluginInterface.UiBuilder.OpenMainUi += () => mainWindow.IsOpen = true;
 
-        CommandManager.AddHandler("/gearsort", new CommandInfo(OnCommand));
-        CommandManager.AddHandler("/gearsetsort", new CommandInfo(OnCommand));
+        CommandManager.AddHandler("/gearsort", new CommandInfo(OnCommand)
+        {
+            HelpMessage = "Open GearsetSort Interface"
+        });
     }
 
 
