@@ -91,6 +91,7 @@ public partial class Core
         // After this it then uses the indexes of the gearsets list as the target of the gearset
         // it then does something i actually forgot, but it works. I lost the text document that explained it
         // think its literally just a bubble sort, it made sense at the time
+        // someone more intelligent than me let me know a better method
 
 
         Log.Info("Applying");
@@ -128,7 +129,6 @@ public partial class Core
                 {
                     if (j != i)
                     {
-                        
                         gearsetModule->ReassignGearsetId(j, i);
                         hotbarModule->ReassignGearsetId(j, i);
                         (targetIndexes[j], targetIndexes[i]) = (targetIndexes[i], targetIndexes[j]);

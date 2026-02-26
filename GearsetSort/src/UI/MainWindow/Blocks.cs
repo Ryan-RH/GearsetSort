@@ -65,7 +65,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        Util.CentreText(selectedGearset.name, new Vector4(0.4f, 0.8f, 1f, 1f), false);
+        Util.CentreText(selectedGearset.name, Util.JobToColour(selectedGearset.classJob.id), false);
 
         ImGui.SameLine();
 
@@ -117,7 +117,7 @@ public partial class MainWindow : Window
             if (selectedGearset != null)
                 Core.ChangeGearset(selectedGearset.id);
         }
-        Util.HoverToolTip("Hold \"Left-Ctrl\" and click the button\nto change this gearset with your currently equipped.");
+        Util.HoverToolTip("Hold Ctrl and left click to change this\ngearset with your currently equipped gear.");
         
 
         ImGui.SameLine();

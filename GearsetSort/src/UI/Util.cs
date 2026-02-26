@@ -64,16 +64,43 @@ public static class Util
     
     public static Vector2 Vec2(Vector2 vec2)
         => new(vec2.X * ImGuiHelpers.GlobalScale, vec2.Y * ImGuiHelpers.GlobalScale);
+
+    public static Vector4 RGB(int R, int G, int B)
+        => new(R/255f, G/255f, B/255f, 1f);
+
+    public static Vector4 JobToColour(ushort jobId)
+        => jobId switch
+        {
+            42 => RGB(252, 146, 225),  
+            41 => RGB(16, 130, 16),
+            40 => RGB(128, 160, 240),
+            39 => RGB(150, 90, 144),
+            38 => RGB(226, 176, 175),
+            37 => RGB(121, 109, 48),
+            36 => RGB(65, 100, 205),
+            35 => RGB(232, 123, 123),
+            34 => RGB(228, 109, 4),
+            33 => RGB(255, 231, 74),
+            32 => RGB(209, 38, 204),
+            31 => RGB(110, 225, 214),
+            30 => RGB(175, 25, 100),
+            28 => RGB(134, 87, 255),
+            27 => RGB(45, 155, 120),
+            25 => RGB(165, 121, 214),
+            24 => RGB(255, 240, 220),
+            23 => RGB(145, 186, 94),
+            22 => RGB(65, 100, 205),
+            21 => RGB(207, 38, 33),
+            20 => RGB(214, 156, 0),
+            19 => RGB(168, 210, 230),
+            _ => RGB(102, 204, 255)
+        };
 }
 
 public static class Colour
 {
-    public static readonly Vector4 Green   = new(0.2f, 0.6f, 0.2f, 1f);
-    public static readonly Vector4 Yellow  = new(0.9f, 0.7f, 0.2f, 1f);
-    public static readonly Vector4 Blue    = new(0.2f, 0.6f, 0.8f, 1f);
-    public static readonly Vector4 Red     = new(0.5f, 0.1f, 0.1f, 1f);
-
-    // FFlogs Colours
-
-    
+    public static readonly Vector4 Green = new(0.2f, 0.6f, 0.2f, 1f);
+    public static readonly Vector4 Yellow = new(0.9f, 0.7f, 0.2f, 1f);
+    public static readonly Vector4 Blue = new(0.2f, 0.6f, 0.8f, 1f);
+    public static readonly Vector4 Red = new(0.5f, 0.1f, 0.1f, 1f);    
 }
