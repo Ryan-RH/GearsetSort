@@ -10,7 +10,7 @@ public partial class MainWindow : Window
 {
     public void ScrollableBlock()
     {
-        using var ScrollableBlock = ImRaii.Child("##ScrollableBlock", Util.Vec2(190, 430), true);
+        using var ScrollableBlock = ImRaii.Child("##ScrollableBlock", Util.Vec2(190, 432), true);
 
         if (!ScrollableBlock) return;
 
@@ -55,7 +55,7 @@ public partial class MainWindow : Window
 
     public void PreviewBlock()
     {
-        using var PreviewBlock = ImRaii.Child("##GearsetPreview", Util.Vec2(350, 430), true);
+        using var PreviewBlock = ImRaii.Child("##GearsetPreview", Util.Vec2(350, 432), true);
 
         if (!PreviewBlock) return;
 

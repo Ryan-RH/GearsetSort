@@ -4,7 +4,7 @@ using Dalamud.Interface.Utility.Raii;
 
 namespace GearsetSort.UI;
 
-public partial class MainWindow : Window
+public partial class MainWindow : Window, IDisposable
 {
     public MainWindow() : base($"GearsetSort {P.GetType().Assembly.GetName().Version} ###GearsetSortMainWindow")
     {
@@ -16,10 +16,7 @@ public partial class MainWindow : Window
         AllowPinning = false;
     }
 
-    public void Dispose()
-    {
-        P.windowSystem.RemoveWindow(this);
-    }
+    public void Dispose() { }
 
     public Models.Gearset? selectedGearset = null;
 

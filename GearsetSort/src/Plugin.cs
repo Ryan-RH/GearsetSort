@@ -47,7 +47,7 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenConfigUi -= () => mainWindow.IsOpen = true;
         PluginInterface.UiBuilder.OpenMainUi -= () => mainWindow.IsOpen = true;
 
-        //windowSystem.RemoveAllWindows();
+        windowSystem.RemoveAllWindows();
         mainWindow.Dispose();
 
         CommandManager.RemoveHandler("/gearsort");
