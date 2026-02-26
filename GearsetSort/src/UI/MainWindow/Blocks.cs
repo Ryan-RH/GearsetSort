@@ -119,7 +119,6 @@ public partial class MainWindow : Window
         }
         Util.HoverToolTip("Hold Ctrl and left click to change this\ngearset with your currently equipped gear.");
         
-
         ImGui.SameLine();
 
         if (Util.ColourButton("Equip", new Vector2(60, 25), Colour.Green))
