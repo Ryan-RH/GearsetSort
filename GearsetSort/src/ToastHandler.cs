@@ -9,9 +9,9 @@ public static class ToastHandler
 
     public static void HandleGearsetToast(ref SeString message, ref ToastOptions options, ref bool isHandled)
     {
-        if (message.TextValue.Contains("Gear set number changed"))
+        if (message.TextValue.Contains("Gear set number changed") && toastsToHandle > 0)
         {
-            isHandled = toastsToHandle > 0;
+            isHandled = true;
             toastsToHandle--;
         }
     }
