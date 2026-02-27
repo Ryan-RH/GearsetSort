@@ -13,7 +13,3 @@ public class Config : IPluginConfiguration
         PluginInterface.SavePluginConfig(this);
     }
 }
-
-// add job icons
-// colourise role
-// sort out items in preview

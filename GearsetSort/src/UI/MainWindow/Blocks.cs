@@ -38,7 +38,7 @@ public partial class MainWindow : Window
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
 
-        if (ImGui.Selectable($"{gearsetId + 1}", false, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowItemOverlap))
+        if (ImGui.Selectable($"{gearsetId+1}", false, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowItemOverlap))
             selectedGearset = gearset;
 
         DragDropSource(gearsetId.ToString());

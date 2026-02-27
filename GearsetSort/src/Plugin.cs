@@ -53,7 +53,6 @@ public sealed class Plugin : IDalamudPlugin
         mainWindow.Dispose();
 
         CommandManager.RemoveHandler("/gearsort");
-        CommandManager.RemoveHandler("/gearsetsort");
     }
 
     private void OnCommand(string command, string args)
