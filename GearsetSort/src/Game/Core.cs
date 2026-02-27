@@ -42,7 +42,7 @@ public partial class Core
             {
                 var itemId = item.ItemId;
                 var itemRow = itemSheet.GetRow(itemId % 100000);
-                if (itemRow.Equals(default(Item)) || itemRow.RowId == 0 || itemRow.EquipSlotCategory.RowId == 17) continue;
+                if (itemRow.RowId == 0 || itemRow.EquipSlotCategory.RowId == 17) continue;
                     
 
                 var texture = GetTextureFromIcon(itemRow.Icon, ItemUtil.IsHighQuality(itemId));
@@ -53,7 +53,7 @@ public partial class Core
                 for (int i = 0; i < item.Materia.Length; i++)
                 {
                     var matRow = materiaSheet.GetRow(item.Materia[i]);
-                    if (matRow.Equals(default(Materia))) continue;
+                    if (matRow.RowId == 0) continue;
                     var matObj = matRow.Item[item.MateriaGrades[i]];
 
                     var matTexture = GetTextureFromIcon(matObj.Value.Icon);
