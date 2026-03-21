@@ -92,8 +92,7 @@ public class Core
 
     public static void DeleteGearset(int gearsetId) 
     {
-        var ret = P.memory.DeleteGearset(gearsetId);
-        Log.Debug($"{ret:X}");
+        P.memory.DeleteGearset(gearsetId);
         var slot = gearsets.FindIndex(x => x.id == gearsetId);
         if (slot != -1) gearsets.RemoveAt(slot);
     }
