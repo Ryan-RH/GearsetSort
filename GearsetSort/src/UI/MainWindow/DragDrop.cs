@@ -1,5 +1,3 @@
-
-
 using System.Text;
 using Dalamud.Interface.Utility.Raii;
 
@@ -17,7 +15,7 @@ public partial class MainWindow : Window
             ImGui.SetDragDropPayload("GearsetPayload", payload);
         }
 
-        Util.SetTableBackgroundColour(new Vector4(0.262f, 0.844f, 0.178f, 0.25f));
+        ImEx.SetTableBackgroundColour(new Vector4(0.262f, 0.844f, 0.178f, 0.25f));
     }
 
     private unsafe void DragDropTarget(int indexToDeliver)
@@ -45,6 +43,6 @@ public partial class MainWindow : Window
                 }
             }
         }
-        Util.SetTableBackgroundColour(new Vector4(0.28f, 0.84f, 0.76f, 0.25f));
+        ImEx.SetTableBackgroundColour(new Vector4(0.28f, 0.84f, 0.76f, 0.25f));
     }
 }

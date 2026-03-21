@@ -1,8 +1,8 @@
-using System.Reflection.Metadata;
-using System.Text;
 using Dalamud.Game.Text;
-using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Utility;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using Dalamud.Interface;
 
 namespace GearsetSort.UI;
 
@@ -10,7 +10,7 @@ public partial class MainWindow : Window
 {
     public void ScrollableBlock()
     {
-        using var ScrollableBlock = ImRaii.Child("##ScrollableBlock", Util.Vec2(190, 432), true);
+        using var ScrollableBlock = ImRaii.Child("##ScrollableBlock", ImEx.Vec2(190, 432), true);
 
         if (!ScrollableBlock) return;
 
@@ -39,40 +39,42 @@ public partial class MainWindow : Window
         ImGui.TableNextColumn();
 
         if (ImGui.Selectable($"{gearsetId+1}", false, ImGuiSelectableFlags.SpanAllColumns | ImGuiSelectableFlags.AllowItemOverlap))
-            selectedGearset = gearset;
+            selectedGearsetId = index;
+        
+        ImEx.ItemMouseClicked(ImGuiMouseButton.Left, Core.EquipGearset, true, gearsetId);
+
+        DrawContextMenu(gearset);
 
         DragDropSource(gearsetId.ToString());
         DragDropTarget(index);
 
         ImGui.TableNextColumn();
-        var wrap = gearset.classJob.icon.GetWrapOrDefault();
-        if (wrap!= null)
-            ImGui.Image(wrap.Handle, Util.Vec2(20, 20));
+        
+        if (Util.GetJobIcon(gearset.classJob)?.GetWrapOrEmpty() is { } wrap)
+            ImEx.Image(wrap, new(20, 20));
 
         ImGui.TableNextColumn();
-        ImGui.Text(gearset.name);
+
+        GearsetNameHandler(gearset);
     }
 
     public void PreviewBlock()
     {
-        using var PreviewBlock = ImRaii.Child("##GearsetPreview", Util.Vec2(350, 432), true);
+        using var PreviewBlock = ImRaii.Child("##GearsetPreview", ImEx.Vec2(350, 432), true);
 
         if (!PreviewBlock) return;
 
-        if (selectedGearset == null)
+        if (selectedGearsetId == null)
         {
-            Util.CentreText("Select a gearset", new Vector4(0.605f, 0.755f, 0.746f, 1f), true);
+            ImEx.Text("Select a gearset", Colour.SoftBlue, ImExFlags.CentreX | ImExFlags.CentreY);
             return;
         }
 
-        Util.CentreText(selectedGearset.name, Util.JobToColour(selectedGearset.classJob.id), false);
+        var selectedGearset = Core.gearsets[selectedGearsetId.Value];
 
-        ImGui.SameLine();
+        ImEx.Text(selectedGearset.name, Util.JobToColour(selectedGearset.classJob), ImExFlags.CentreX);
 
-
-        var scaledCursorPosX = ImGui.GetCursorPosX() -ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(selectedGearset.name).X;
-        ImGui.SetCursorPosX(scaledCursorPosX + 275 * ImGuiHelpers.GlobalScale);
-        ImGui.Text($"{(char)SeIconChar.ItemLevel} {selectedGearset.itemLevel.ToString()}");
+        ImEx.Text($"{(char)SeIconChar.ItemLevel} {selectedGearset.itemLevel}", null, ImExFlags.SameLine | ImExFlags.RightAlign);
 
         ImGui.Spacing();
         ImGui.Separator();
@@ -91,63 +93,37 @@ public partial class MainWindow : Window
                 ImGui.Spacing();
                 storedCategoryChange = item.majorCategory;
             }
-            var wrap = item.texture.GetWrapOrEmpty();
-            if (wrap == null) continue;
+
+            if (Util.GetTextureFromIcon(item.iconId, ItemUtil.IsHighQuality(item.iconId))?.GetWrapOrEmpty() is not { } wrap) continue;
                 
             using (var TextBlock = ImRaii.Group())
             {
                 if (!TextBlock) continue;
 
-                ImGui.Image(wrap.Handle, Util.Vec2(20, 20));
-                ImGui.SameLine();
-                ImGui.Text(item.name);
+                ImEx.Image(wrap, new(20,20));
+                ImEx.Text(item.name, null, ImExFlags.SameLine);
             }
-            if (ImGui.IsItemHovered())
+            ImEx.HoverToolTip(() =>
             {
-                ToolTip(item);
+                if (item.materia.Count == 0)
+                {
+                    ImEx.Text("No Materia");
+                    return;
+                }
+                foreach (var materia in item.materia)
+                {
+                    if (Util.GetTextureFromIcon(materia.iconId)?.GetWrapOrEmpty() is not { } wrap) continue;
+                    ImEx.Image(wrap, new(15, 15));
+                    ImEx.Text(materia.name, flags: ImExFlags.SameLine);
+                }
+            });
+
+            // I don't actually know what Unknown02 is still. But I had a missing item that was using it instead of ItemMissing(???)
+            if ((item.content.Flags & (RaptureGearsetModule.GearsetItemFlag.ItemMissing | RaptureGearsetModule.GearsetItemFlag.Unknown02)) != 0)
+            {
+                ImEx.FontAwesomeIcon(FontAwesomeIcon.ExclamationTriangle.ToIconString(), Colour.Red, ImExFlags.SameLine | ImExFlags.RightAlign);
+                ImEx.HoverToolTip("Missing Item");
             }
-        }
-
-        ImGui.SetCursorPos(
-            new Vector2(cursorPos.X + ImGuiHelpers.GlobalScale * 200, 
-            cursorPos.Y + blockSize.Y - ImGuiHelpers.GlobalScale * 25));
-
-        if (Util.ColourButton("Update", new Vector2(60, 25), Colour.Yellow, !ImGui.IsKeyDown(ImGuiKey.LeftCtrl)))
-        {
-            if (selectedGearset != null)
-                Core.ChangeGearset(selectedGearset.id);
-        }
-        Util.HoverToolTip("Hold Ctrl and left click to change this\ngearset with your currently equipped gear.");
-        
-        ImGui.SameLine();
-
-        if (Util.ColourButton("Equip", new Vector2(60, 25), Colour.Green))
-        {   
-            if (selectedGearset != null)
-                Core.EquipGearset(selectedGearset.id);
-        }
-    }
-
-    private void ToolTip(Models.SetItem item)
-    {
-        using var ToolTip = ImRaii.Tooltip();
-                    
-        if (!ToolTip) return;
-
-        if (item.materia.Count == 0)
-        {
-            ImGui.Text("No Materia");
-            return;
-        }
-
-        foreach (var materia in item.materia)
-        {
-            var wrapMateria = materia.texture.GetWrapOrEmpty();
-            if (wrapMateria == null) return;
-
-            ImGui.Image(wrapMateria.Handle, Util.Vec2(15, 15));
-            ImGui.SameLine();
-            ImGui.Text(materia.name);
         }
     }
 }

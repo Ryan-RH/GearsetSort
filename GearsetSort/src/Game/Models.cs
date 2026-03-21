@@ -1,33 +1,27 @@
 using System.Collections.Generic;
-using Dalamud.Interface.Textures;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 
 namespace GearsetSort.Models;
-
 public record Gearset
 (
     int id,
     string name,
-    SetClassJob classJob,
+    byte classJob,
     IReadOnlyList<SetItem> items,
     int itemLevel
 );
 
 public record SetItem
 (
-    ISharedImmediateTexture texture,
+    uint iconId,
     string name,
     byte majorCategory,
-    IReadOnlyList<SetMateria> materia
-);
-
-public record SetClassJob
-(
-    ushort id,
-    ISharedImmediateTexture icon
+    IReadOnlyList<SetMateria> materia,
+    RaptureGearsetModule.GearsetItem content
 );
 
 public record SetMateria
 (
-    ISharedImmediateTexture texture,
+    ushort iconId,
     string name
 );

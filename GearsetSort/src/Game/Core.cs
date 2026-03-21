@@ -1,25 +1,18 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Dalamud.Interface.Textures;
-using Dalamud.Utility;
-using FFXIVClientStructs.FFXIV.Client.Game.Control;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 using GearsetSort.Models;
+using Dalamud.Game.Gui.Toast;
 
 namespace GearsetSort;
 
-public partial class Core
+public class Core
 {
     public static List<Gearset> gearsets = new();
 
     public static void ApplyChange()
     {
         ResortGearsets();
-        RefreshAddon();
         FetchGearsets();
     }
 
@@ -43,11 +36,6 @@ public partial class Core
                 var itemId = item.ItemId;
                 var itemRow = itemSheet.GetRow(itemId % 100000);
                 if (itemRow.RowId == 0 || itemRow.EquipSlotCategory.RowId == 17) continue;
-                    
-
-                var texture = GetTextureFromIcon(itemRow.Icon, ItemUtil.IsHighQuality(itemId));
-                if (texture == null) continue;
-                    
 
                 List<SetMateria> materia = new();
                 for (int i = 0; i < item.Materia.Length; i++)
@@ -55,31 +43,20 @@ public partial class Core
                     var matRow = materiaSheet.GetRow(item.Materia[i]);
                     if (matRow.RowId == 0) continue;
                     var matObj = matRow.Item[item.MateriaGrades[i]];
-
-                    var matTexture = GetTextureFromIcon(matObj.Value.Icon);
-                    if (matTexture == null) continue;
-
-                    materia.Add(new SetMateria(matTexture, matObj.Value.Name.ToString()));
+                    materia.Add(new SetMateria(matObj.Value.Icon, matObj.Value.Name.ToString()));
                 }
-
-                SetItem foundItem = new(texture, itemRow.Name.ToString(), itemRow.ItemUICategory.Value.OrderMajor, materia);
+                
+                SetItem foundItem = new(itemRow.Icon, itemRow.Name.ToString(), itemRow.ItemUICategory.Value.OrderMajor, materia, item);
                 items.Add(foundItem);
             }
-            var jobTexture = Texture.GetFromGame($"ui/icon/062000/0621{entry.ClassJob:00}.tex");
-            if (jobTexture == null) continue;
-
-            SetClassJob classJob = new(entry.ClassJob, jobTexture);
-            Gearset gearset = new(entry.Id, entry.NameString, classJob, items, entry.ItemLevel);
+            Gearset gearset = new(entry.Id, entry.NameString, entry.ClassJob, items, entry.ItemLevel);
             gearsets.Add(gearset);
         }
     }
 
-    private static unsafe void ResortGearsets()
+    private static void ResortGearsets(bool log = true)
     {
         Log.Info("Applying");
-        var gearsetModule = RaptureGearsetModule.Instance();
-        var hotbarModule = RaptureHotbarModule.Instance();
-
         for (int i = 0; i < gearsets.Count; i++)
         {
             var interest = gearsets[i];
@@ -92,34 +69,38 @@ public partial class Core
             {
                 gearsets[toSwap] = gearsets[toSwap] with { id = temp };
             }
-            gearsetModule->ReassignGearsetId(i, temp);
-            hotbarModule->ReassignGearsetId(i, temp);
-            ToastHandler.toastsToHandle++;
+            ReassignGearsetId(i, temp);
         }
-    }
-
-    private static unsafe void RefreshAddon()
-    {
-        var addon = GameGui.GetAddonByName("GearSetList");
-        if (addon != null)
-        {
-            var addonBase = (AtkUnitBase*)addon.Address;
-            var atkUnitManager = RaptureAtkUnitManager.Instance();
-            atkUnitManager->RefreshAddon(addonBase, addonBase->AtkValuesCount, addonBase->AtkValues);
-        }
-    }
-
-    public static unsafe void EquipGearset(int index)
-    {
-        var gearsetModule = RaptureGearsetModule.Instance();
-        gearsetModule->EquipGearset(index);
-    }
-
-    public static unsafe void ChangeGearset(int index)
-    {
-        var gearsetModule = RaptureGearsetModule.Instance();
-        gearsetModule->UpdateGearset(index);
+        if (log) ToastGui.ShowNormal("Gearset Order Changed", new ToastOptions { Speed = ToastSpeed.Fast });
         FetchGearsets();
     }
 
+    public static void ReassignGearsetId(int newGearsetId, int gearsetId)
+    {
+        P.memory.ReassignGearsetId(gearsetId, newGearsetId);
+        
+    }
+
+    public static unsafe void EquipGearset(int gearsetId)
+        => RaptureGearsetModule.Instance()->EquipGearset(gearsetId);
+
+    public static void UpdateGearset(int gearsetId)
+    {
+        P.memory.UpdateGearset(gearsetId);
+        FetchGearsets(); 
+    }
+
+    public static void DeleteGearset(int gearsetId) 
+    {
+        var ret = P.memory.DeleteGearset(gearsetId);
+        Log.Debug($"{ret:X}");
+        var slot = gearsets.FindIndex(x => x.id == gearsetId);
+        if (slot != -1) gearsets.RemoveAt(slot);
+    }
+
+    public static void RenameGearset(int gearsetId, string name)
+    {
+        P.memory.RenameGearset(gearsetId, name);
+        FetchGearsets();
+    }
 }
