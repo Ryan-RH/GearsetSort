@@ -1,14 +1,14 @@
 {
-  "Author": "Treezy",
-  "Name": "Gearset Sort",
-  "Punchline": "Better Gearset Sorting",
-  "Description": "A cleaner interface to sort your gearsets that allows both swap/insert methods.",
-  "Tags": [
-    "GearsetSort",
-    "Gearset",
-    "Sort"
-  ],
-  "InternalName": "GearsetSort",
-  "RepoUrl": "https://github.com/Ryan-RH/GearsetSort",
-  "IconUrl": "https://raw.githubusercontent.com/Ryan-RH/GearsetSort/master/images/icon.png"
+    "Author": "Treezy",
+    "Name": "Gearset Sort",
+    "Punchline": "Better Gearset Sorting",
+    "Description": "A cleaner interface to sort your gearsets that allows both swap/insert methods.",
+    "Tags": [
+        "GearsetSort",
+        "Gearset",
+        "Sort"
+    ],
+    "InternalName": "GearsetSort",
+    "RepoUrl": "https://github.com/Ryan-RH/GearsetSort",
+    "IconUrl": "https://raw.githubusercontent.com/Ryan-RH/GearsetSort/master/images/icon.png"
 }

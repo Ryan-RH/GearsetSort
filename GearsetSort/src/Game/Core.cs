@@ -3,10 +3,11 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using Lumina.Excel.Sheets;
 using GearsetSort.Models;
 using Dalamud.Game.Gui.Toast;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace GearsetSort;
 
-public class Core
+public unsafe class Core
 {
     public static List<Gearset> gearsets = new();
 
@@ -16,9 +17,9 @@ public class Core
         FetchGearsets();
     }
 
-    public static unsafe void FetchGearsets()
+    public static void FetchGearsets()
     {
-        var gearsetModule = RaptureGearsetModule.Instance();
+        if (!GetRaptureGS(out var gearsetModule)) return;
         var itemSheet = Data.GetExcelSheet<Item>();
         var materiaSheet = Data.GetExcelSheet<Materia>();
 
@@ -57,6 +58,7 @@ public class Core
     private static void ResortGearsets(bool log = true)
     {
         Log.Info("Applying");
+        P.memory.EnableLogHook();
         for (int i = 0; i < gearsets.Count; i++)
         {
             var interest = gearsets[i];
@@ -71,35 +73,65 @@ public class Core
             }
             ReassignGearsetId(i, temp);
         }
+        P.memory.DisableLogHook();
         if (log) ToastGui.ShowNormal("Gearset Order Changed", new ToastOptions { Speed = ToastSpeed.Fast });
         FetchGearsets();
     }
 
     public static void ReassignGearsetId(int newGearsetId, int gearsetId)
     {
-        P.memory.ReassignGearsetId(gearsetId, newGearsetId);
-        
+        if (!GetAgentGS(out var instance)) return;
+        instance->ReassignGearsetId(gearsetId, newGearsetId);
     }
 
-    public static unsafe void EquipGearset(int gearsetId)
-        => RaptureGearsetModule.Instance()->EquipGearset(gearsetId);
+    public static void EquipGearset(int gearsetId)
+    {
+        if (!GetRaptureGS(out var instance)) return;
+        instance->EquipGearset(gearsetId);
+    }
 
     public static void UpdateGearset(int gearsetId)
     {
-        P.memory.UpdateGearset(gearsetId);
+        if (!GetAgentGS(out var instance)) return;
+        instance->UpdateGearset(gearsetId);
         FetchGearsets(); 
     }
 
     public static void DeleteGearset(int gearsetId) 
     {
-        P.memory.DeleteGearset(gearsetId);
+        if (!GetAgentGS(out var instance)) return;
+
+        instance->DeleteGearset(gearsetId);
         var slot = gearsets.FindIndex(x => x.id == gearsetId);
         if (slot != -1) gearsets.RemoveAt(slot);
     }
 
     public static void RenameGearset(int gearsetId, string name)
     {
-        P.memory.RenameGearset(gearsetId, name);
+        if (!GetAgentGS(out var instance)) return;
+        instance->RenameGearset(gearsetId, name);
         FetchGearsets();
+    }
+
+    private static bool GetAgentGS(out AgentGearSet* instance)
+    {
+        instance = AgentGearSet.Instance();
+        if (instance == null)
+        {
+            Log.Error("AgentGearSet was not found.");
+            return false;
+        }
+        return true;
+    }
+
+    private static bool GetRaptureGS(out RaptureGearsetModule* instance)
+    {
+        instance = RaptureGearsetModule.Instance();
+        if (instance == null)
+        {
+            Log.Error("RaptureGearsetModule was not found.");
+            return false;
+        }
+        return true;
     }
 }
