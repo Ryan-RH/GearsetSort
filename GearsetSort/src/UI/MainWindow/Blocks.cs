@@ -98,8 +98,6 @@ public partial class MainWindow : Window
                 
             using (var TextBlock = ImRaii.Group())
             {
-                if (!TextBlock) continue;
-
                 ImEx.Image(wrap, new(20,20));
                 ImEx.Text(item.name, null, ImExFlags.SameLine);
             }

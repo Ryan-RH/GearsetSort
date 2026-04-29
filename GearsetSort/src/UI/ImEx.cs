@@ -41,8 +41,6 @@ public static class ImEx
         if (!ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) return;
 
         using var ToolTip = ImRaii.Tooltip();
-        if (!ToolTip) return;
-
         content();
     }
 
